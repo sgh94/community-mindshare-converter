@@ -16,24 +16,116 @@
                         <h1 class="h3 mb-0">Community Mindshare Converter</h1>
                     </div>
                     <div class="card-body">
-                        <form id="apiForm">
-                            <div class="mb-3">
-                                <label for="apiUrl" class="form-label">API URL</label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" id="apiUrl" 
-                                           placeholder="https://api.kaito.ai/api/v1/community_mindshare?ticker=MITOSIS&window=7d"
-                                           value="https://api.kaito.ai/api/v1/community_mindshare?ticker=MITOSIS&window=7d">
-                                    <button class="btn btn-primary" type="submit">Fetch Data</button>
-                                </div>
-                                <div class="form-text">Enter the API URL that returns community mindshare JSON data</div>
-                            </div>
-                        </form>
+                        <!-- Input Tabs -->
+                        <ul class="nav nav-tabs mb-3" id="inputTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="url-tab" data-bs-toggle="tab" data-bs-target="#url-input" type="button" role="tab" aria-controls="url-input" aria-selected="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-link-45deg me-1" viewBox="0 0 16 16">
+                                        <path d="M4.715 6.542 3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1.002 1.002 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4.018 4.018 0 0 1-.128-1.287z"/>
+                                        <path d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 1 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 1 0-4.243-4.243L6.586 4.672z"/>
+                                    </svg>
+                                    API URL
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="json-tab" data-bs-toggle="tab" data-bs-target="#json-input" type="button" role="tab" aria-controls="json-input" aria-selected="false">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-braces me-1" viewBox="0 0 16 16">
+                                        <path d="M2.114 8.063V7.9c1.005-.102 1.497-.615 1.497-1.6V4.503c0-1.094.39-1.538 1.354-1.538h.273V2h-.376C3.25 2 2.49 2.759 2.49 4.352v1.524c0 1.094-.376 1.456-1.49 1.456v1.299c1.114 0 1.49.362 1.49 1.456v1.524c0 1.593.759 2.352 2.372 2.352h.376v-.964h-.273c-.964 0-1.354-.444-1.354-1.538V9.663c0-.984-.492-1.497-1.497-1.6zM13.886 7.9v.163c-1.005.103-1.497.616-1.497 1.6v1.798c0 1.094-.39 1.538-1.354 1.538h-.273v.964h.376c1.613 0 2.372-.759 2.372-2.352v-1.524c0-1.094.376-1.456 1.49-1.456V7.332c-1.114 0-1.49-.362-1.49-1.456V4.352C13.51 2.759 12.75 2 11.138 2h-.376v.964h.273c.964 0 1.354.444 1.354 1.538V6.3c0 .984.492 1.497 1.497 1.6z"/>
+                                    </svg>
+                                    JSON Data
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="demo-tab" data-bs-toggle="tab" data-bs-target="#demo-input" type="button" role="tab" aria-controls="demo-input" aria-selected="false">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-circle me-1" viewBox="0 0 16 16">
+                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                        <path d="M6.271 5.055a.5.5 0 0 1 .52.038l3.5 2.5a.5.5 0 0 1 0 .814l-3.5 2.5A.5.5 0 0 1 6 10.5v-5a.5.5 0 0 1 .271-.445z"/>
+                                    </svg>
+                                    Demo
+                                </button>
+                            </li>
+                        </ul>
                         
-                        <div id="loading" class="text-center d-none">
+                        <!-- Tab Content -->
+                        <div class="tab-content" id="inputTabsContent">
+                            <!-- URL Input Tab -->
+                            <div class="tab-pane fade show active" id="url-input" role="tabpanel" aria-labelledby="url-tab">
+                                <form id="apiForm">
+                                    <div class="mb-3">
+                                        <label for="apiUrl" class="form-label">API URL</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="apiUrl" 
+                                                placeholder="https://api.kaito.ai/api/v1/community_mindshare?ticker=MITOSIS&window=7d"
+                                                value="https://api.kaito.ai/api/v1/community_mindshare?ticker=MITOSIS&window=7d">
+                                            <button class="btn btn-primary" type="submit">Fetch Data</button>
+                                        </div>
+                                        <div class="form-text">Enter the API URL that returns community mindshare JSON data</div>
+                                    </div>
+                                </form>
+                                <div class="alert alert-info" role="alert">
+                                    <h5>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-info-circle me-2" viewBox="0 0 16 16">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                            <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                                        </svg>
+                                        How to use
+                                    </h5>
+                                    <p>If direct API access doesn't work due to browser restrictions, try:</p>
+                                    <ol>
+                                        <li>Open the API URL in a new tab</li>
+                                        <li>Copy the entire JSON response</li>
+                                        <li>Switch to the "JSON Data" tab</li>
+                                        <li>Paste the copied data and click "Process Data"</li>
+                                    </ol>
+                                </div>
+                            </div>
+                            
+                            <!-- JSON Input Tab -->
+                            <div class="tab-pane fade" id="json-input" role="tabpanel" aria-labelledby="json-tab">
+                                <form id="jsonForm">
+                                    <div class="mb-3">
+                                        <label for="jsonData" class="form-label">JSON Data</label>
+                                        <textarea class="form-control" id="jsonData" rows="10" placeholder='{"community_mindshare": {"top_100_yappers": [...]}}' style="font-family: monospace;"></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <button type="button" class="btn btn-outline-secondary" onclick="window.pasteExampleJson()">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard me-1" viewBox="0 0 16 16">
+                                                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                                                <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                                            </svg>
+                                            Paste Example
+                                        </button>
+                                        <button type="submit" class="btn btn-primary">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear me-1" viewBox="0 0 16 16">
+                                                <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+                                                <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
+                                            </svg>
+                                            Process Data
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                            <!-- Demo Tab -->
+                            <div class="tab-pane fade" id="demo-input" role="tabpanel" aria-labelledby="demo-tab">
+                                <div class="text-center py-4">
+                                    <h4>Try with Sample Data</h4>
+                                    <p class="text-muted">Click the button below to load example data and see how the tool works.</p>
+                                    <button class="btn btn-lg btn-success" onclick="window.loadDemoData()">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-play-fill me-2" viewBox="0 0 16 16">
+                                            <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
+                                        </svg>
+                                        Load Demo Data
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="loading" class="text-center d-none mt-4">
                             <div class="spinner-border text-primary" role="status">
                                 <span class="visually-hidden">Loading...</span>
                             </div>
-                            <p class="mt-2">Loading data...</p>
+                            <p class="mt-2">Processing data...</p>
                         </div>
                         
                         <div id="results" class="mt-4 d-none">
