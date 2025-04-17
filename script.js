@@ -1,7 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Elements
     const apiForm = document.getElementById('apiForm');
+    const jsonForm = document.getElementById('jsonForm');
     const apiUrlInput = document.getElementById('apiUrl');
+    const jsonDataInput = document.getElementById('jsonData');
     const loadingDiv = document.getElementById('loading');
     const resultsDiv = document.getElementById('results');
     const resultsTable = document.getElementById('resultsTable');
@@ -11,23 +13,31 @@ document.addEventListener('DOMContentLoaded', function() {
     // Store the data globally so we can use it for the CSV download
     let contributorsData = [];
     
-    // Handle form submission
+    // Handle API URL form submission
     apiForm.addEventListener('submit', function(e) {
         e.preventDefault();
         const url = apiUrlInput.value.trim();
+        if (!url) {
+            showError("Please enter a valid URL");
+            return;
+        }
+        fetchData(url);
+    });
+    
+    // Handle JSON form submission
+    jsonForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const jsonText = jsonDataInput.value.trim();
+        if (!jsonText) {
+            showError("Please enter JSON data");
+            return;
+        }
         
-        // Check if input looks like a URL or JSON
-        if (url.startsWith('{')) {
-            // This appears to be JSON data
-            try {
-                const jsonData = JSON.parse(url);
-                processJsonData(jsonData);
-            } catch (error) {
-                showError("Invalid JSON format. Please check your input.");
-            }
-        } else {
-            // This appears to be a URL
-            fetchData(url);
+        try {
+            const jsonData = JSON.parse(jsonText);
+            processJsonData(jsonData);
+        } catch (error) {
+            showError(`Invalid JSON format: ${error.message}`);
         }
     });
     
@@ -41,30 +51,25 @@ document.addEventListener('DOMContentLoaded', function() {
     // Process direct JSON input
     function processJsonData(data) {
         try {
-            loadingDiv.classList.remove('d-none');
-            resultsDiv.classList.add('d-none');
-            errorMessage.classList.add('d-none');
+            showLoading();
             
             if (data && data.community_mindshare && data.community_mindshare.top_100_yappers) {
                 contributorsData = processData(data.community_mindshare.top_100_yappers);
                 displayResults(contributorsData);
-                resultsDiv.classList.remove('d-none');
+                showResults();
             } else {
-                throw new Error('Invalid data format');
+                throw new Error('Invalid data format. Make sure the JSON contains a "community_mindshare" object with a "top_100_yappers" array.');
             }
         } catch (error) {
             showError(`Error processing data: ${error.message}`);
         } finally {
-            loadingDiv.classList.add('d-none');
+            hideLoading();
         }
     }
     
     // Fetch data from API
     async function fetchData(url) {
-        // Show loading state
-        loadingDiv.classList.remove('d-none');
-        resultsDiv.classList.add('d-none');
-        errorMessage.classList.add('d-none');
+        showLoading();
         
         try {
             // Try direct fetch first (will work if CORS is properly configured)
@@ -81,31 +86,66 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // If direct fetch fails, show a message explaining API CORS issues
             showError(`
-                Unable to fetch data directly from the API. Due to browser security restrictions (CORS), 
+                <strong>Unable to fetch data directly from the API.</strong> Due to browser security restrictions (CORS), 
                 you may need to copy and paste the API response directly. 
                 
-                To do this:
-                1. Open the API URL in a new browser tab
-                2. Copy the entire JSON response
-                3. Paste it into the input field above
-                4. Click "Fetch Data"
+                <br><br>
+                <strong>To do this:</strong>
+                <ol>
+                    <li>Open the API URL in a new browser tab</li>
+                    <li>Copy the entire JSON response</li>
+                    <li>Switch to the "JSON Data" tab</li>
+                    <li>Paste the copied data and click "Process Data"</li>
+                </ol>
+                
+                <br>
+                <strong>Or for a quicker demo:</strong>
+                <ul>
+                    <li>Switch to the "Demo" tab and click "Load Demo Data"</li>
+                </ul>
             `);
         } catch (error) {
             showError(`Error: ${error.message}. Please check the URL and try again.`);
         } finally {
-            loadingDiv.classList.add('d-none');
+            hideLoading();
         }
     }
     
-    // Show error message
+    // UI Helper Functions
+    function showLoading() {
+        loadingDiv.classList.remove('d-none');
+        resultsDiv.classList.add('d-none');
+        errorMessage.classList.add('d-none');
+    }
+    
+    function hideLoading() {
+        loadingDiv.classList.add('d-none');
+    }
+    
+    function showResults() {
+        resultsDiv.classList.remove('d-none');
+        errorMessage.classList.add('d-none');
+    }
+    
     function showError(message) {
         errorMessage.innerHTML = message;
         errorMessage.classList.remove('d-none');
+        resultsDiv.classList.add('d-none');
     }
     
     // Process the data into a cleaner format
     function processData(yappers) {
         return yappers.map(yapper => {
+            // Calculate engagements
+            const engagementsRaw = (
+                (yapper.total_retweets || 0) + 
+                (yapper.total_quote_tweets || 0) + 
+                (yapper.total_likes || 0) + 
+                (yapper.total_bookmarks || 0) + 
+                (yapper.total_smart_engagements || 0) +
+                (yapper.total_community_engagements || 0)
+            );
+            
             return {
                 rank: yapper.rank,
                 username: yapper.username,
@@ -114,20 +154,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 tweetCount: yapper.tweet_counts,
                 impressions: yapper.total_impressions.toLocaleString(),
                 impressionsRaw: yapper.total_impressions,
-                engagements: (
-                    (yapper.total_retweets || 0) + 
-                    (yapper.total_quote_tweets || 0) + 
-                    (yapper.total_likes || 0) + 
-                    (yapper.total_bookmarks || 0) + 
-                    (yapper.total_community_engagements || 0)
-                ).toLocaleString(),
-                engagementsRaw: (
-                    (yapper.total_retweets || 0) + 
-                    (yapper.total_quote_tweets || 0) + 
-                    (yapper.total_likes || 0) + 
-                    (yapper.total_bookmarks || 0) + 
-                    (yapper.total_community_engagements || 0)
-                )
+                engagements: engagementsRaw.toLocaleString(),
+                engagementsRaw: engagementsRaw
             };
         });
     }
@@ -243,6 +271,32 @@ document.addEventListener('DOMContentLoaded', function() {
                         total_likes: 537,
                         total_bookmarks: 20,
                         total_community_engagements: 84
+                    },
+                    {
+                        user_id: "951213360045023234",
+                        rank: "4",
+                        username: "Web3Developer",
+                        mindshare: 0.01895892783565214,
+                        tweet_counts: 25,
+                        total_impressions: 10400,
+                        total_retweets: 39,
+                        total_quote_tweets: 12,
+                        total_likes: 437,
+                        total_bookmarks: 15,
+                        total_community_engagements: 64
+                    },
+                    {
+                        user_id: "951213360045023235",
+                        rank: "5",
+                        username: "BlockchainGuru",
+                        mindshare: 0.01295892783565214,
+                        tweet_counts: 20,
+                        total_impressions: 8400,
+                        total_retweets: 29,
+                        total_quote_tweets: 10,
+                        total_likes: 337,
+                        total_bookmarks: 12,
+                        total_community_engagements: 54
                     }
                 ]
             }
@@ -253,7 +307,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Add paste example button functionality
     window.pasteExampleJson = function() {
-        apiUrlInput.value = `{
+        jsonDataInput.value = `{
   "community_mindshare": {
     "total_unique_yappers": 1361,
     "total_unique_tweets": 5205,
