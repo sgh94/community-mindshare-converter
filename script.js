@@ -14,7 +14,21 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle form submission
     apiForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        fetchData(apiUrlInput.value.trim());
+        const url = apiUrlInput.value.trim();
+        
+        // Check if input looks like a URL or JSON
+        if (url.startsWith('{')) {
+            // This appears to be JSON data
+            try {
+                const jsonData = JSON.parse(url);
+                processJsonData(jsonData);
+            } catch (error) {
+                showError("Invalid JSON format. Please check your input.");
+            }
+        } else {
+            // This appears to be a URL
+            fetchData(url);
+        }
     });
     
     // Handle download CSV button
@@ -24,26 +38,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Fetch data from API
-    async function fetchData(url) {
-        // Show loading state
-        loadingDiv.classList.remove('d-none');
-        resultsDiv.classList.add('d-none');
-        errorMessage.classList.add('d-none');
-        
+    // Process direct JSON input
+    function processJsonData(data) {
         try {
-            // Add CORS proxy to handle cross-origin requests
-            // Note: In a production environment, you would handle CORS properly on your server
-            const corsProxyUrl = 'https://cors-anywhere.herokuapp.com/';
-            const response = await fetch(corsProxyUrl + url);
+            loadingDiv.classList.remove('d-none');
+            resultsDiv.classList.add('d-none');
+            errorMessage.classList.add('d-none');
             
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            
-            // Process data
             if (data && data.community_mindshare && data.community_mindshare.top_100_yappers) {
                 contributorsData = processData(data.community_mindshare.top_100_yappers);
                 displayResults(contributorsData);
@@ -52,12 +53,54 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error('Invalid data format');
             }
         } catch (error) {
-            console.error('Error fetching data:', error);
-            errorMessage.textContent = `Error: ${error.message}. Please check the URL and try again.`;
-            errorMessage.classList.remove('d-none');
+            showError(`Error processing data: ${error.message}`);
         } finally {
             loadingDiv.classList.add('d-none');
         }
+    }
+    
+    // Fetch data from API
+    async function fetchData(url) {
+        // Show loading state
+        loadingDiv.classList.remove('d-none');
+        resultsDiv.classList.add('d-none');
+        errorMessage.classList.add('d-none');
+        
+        try {
+            // Try direct fetch first (will work if CORS is properly configured)
+            try {
+                const response = await fetch(url);
+                if (response.ok) {
+                    const data = await response.json();
+                    processJsonData(data);
+                    return;
+                }
+            } catch (directFetchError) {
+                console.warn('Direct fetch failed, trying alternative methods', directFetchError);
+            }
+            
+            // If direct fetch fails, show a message explaining API CORS issues
+            showError(`
+                Unable to fetch data directly from the API. Due to browser security restrictions (CORS), 
+                you may need to copy and paste the API response directly. 
+                
+                To do this:
+                1. Open the API URL in a new browser tab
+                2. Copy the entire JSON response
+                3. Paste it into the input field above
+                4. Click "Fetch Data"
+            `);
+        } catch (error) {
+            showError(`Error: ${error.message}. Please check the URL and try again.`);
+        } finally {
+            loadingDiv.classList.add('d-none');
+        }
+    }
+    
+    // Show error message
+    function showError(message) {
+        errorMessage.innerHTML = message;
+        errorMessage.classList.remove('d-none');
     }
     
     // Process the data into a cleaner format
@@ -155,19 +198,94 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.removeChild(link);
     }
     
-    // Optional: Add a demo function to show sample data without needing API
+    // Add a demo function to load sample data
     window.loadDemoData = function() {
-        // Sample data structure for testing purposes
         const sampleData = {
             community_mindshare: {
+                total_unique_yappers: 1361,
+                total_unique_tweets: 5205,
                 top_100_yappers: [
-                    // Sample data would go here
+                    {
+                        user_id: "1739107604931166208",
+                        rank: "1",
+                        username: "Crypto_Zh0u",
+                        mindshare: 0.07295892783565214,
+                        tweet_counts: 79,
+                        total_impressions: 52400,
+                        total_retweets: 139,
+                        total_quote_tweets: 36,
+                        total_likes: 1337,
+                        total_bookmarks: 40,
+                        total_community_engagements: 194
+                    },
+                    {
+                        user_id: "951213360045023232",
+                        rank: "2",
+                        username: "CryptoUser",
+                        mindshare: 0.05295892783565214,
+                        tweet_counts: 45,
+                        total_impressions: 35400,
+                        total_retweets: 89,
+                        total_quote_tweets: 26,
+                        total_likes: 937,
+                        total_bookmarks: 30,
+                        total_community_engagements: 144
+                    },
+                    {
+                        user_id: "951213360045023233",
+                        rank: "3",
+                        username: "TokenTrader",
+                        mindshare: 0.02295892783565214,
+                        tweet_counts: 30,
+                        total_impressions: 15400,
+                        total_retweets: 49,
+                        total_quote_tweets: 16,
+                        total_likes: 537,
+                        total_bookmarks: 20,
+                        total_community_engagements: 84
+                    }
                 ]
             }
         };
         
-        contributorsData = processData(sampleData.community_mindshare.top_100_yappers);
-        displayResults(contributorsData);
-        resultsDiv.classList.remove('d-none');
+        processJsonData(sampleData);
+    };
+    
+    // Add paste example button functionality
+    window.pasteExampleJson = function() {
+        apiUrlInput.value = `{
+  "community_mindshare": {
+    "total_unique_yappers": 1361,
+    "total_unique_tweets": 5205,
+    "top_100_yappers": [
+      {
+        "user_id": "1739107604931166208",
+        "rank": "1",
+        "username": "Crypto_Zh0u",
+        "mindshare": 0.07295892783565214,
+        "tweet_counts": 79,
+        "total_impressions": 52400,
+        "total_retweets": 139,
+        "total_quote_tweets": 36,
+        "total_likes": 1337,
+        "total_bookmarks": 40,
+        "total_community_engagements": 194
+      },
+      {
+        "user_id": "951213360045023232",
+        "rank": "2",
+        "username": "CryptoUser",
+        "mindshare": 0.05295892783565214,
+        "tweet_counts": 45,
+        "total_impressions": 35400,
+        "total_retweets": 89,
+        "total_quote_tweets": 26,
+        "total_likes": 937,
+        "total_bookmarks": 30,
+        "total_community_engagements": 144
+      }
+    ]
+  }
+}`;
     };
 });
